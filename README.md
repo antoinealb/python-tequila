@@ -1,5 +1,5 @@
 # python-tequila
-A python wrapper for the Tequila Login Manager@EPFL. Based on original work by
+A python wrapper for the Tequila Login Manager at EPFL. Based on original work by
 @gcmalloc.
 
 ## Usage
