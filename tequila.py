@@ -8,59 +8,49 @@ try:
 except ImportError:
     import urllib.parse as urlparse
 
+TEQUILA_LOGIN = "http://moodle.epfl.ch/login/index.php"
+TEQUILA_LOGIN_POST = "https://tequila.epfl.ch/cgi-bin/tequila/login"
+
 class TequilaError(RuntimeError):
     """
     Exception thrown in case of Tequila error.
     """
     pass
 
-class TequilaConnexionWrapper(object):
-    TEQUILA_LOGIN = "http://moodle.epfl.ch/login/index.php"
-    TEQUILA_LOGIN_POST = "https://tequila.epfl.ch/cgi-bin/tequila/login"
-    def __init__(self, username, password):
-        """Explicitly login into the tequila service, this will create
-        a new tequila session as self.session
+def create_tequila_session(username, password):
+    """Explicitly login into the tequila service, this will create
+    a new tequila session.
 
-        :raise TequilaError:
-        """
-        with requests.session() as self.session:
-            resp = self.session.get(TequilaConnexionWrapper.TEQUILA_LOGIN)
-            if resp.status_code != 200:
-                raise TequilaError()
-            parsed_url = urlparse.urlsplit(resp.url)
-            dict_query = urlparse.parse_qs(parsed_url.query)
-            self.sesskey = dict_query['requestkey'][0]
-            payload = dict()
-            payload["requestkey"] = self.sesskey
-            payload["username"] = username
-            payload["password"] = password
+    :raise TequilaError:
+    """
+    session = requests.session()
+    resp = session.get(TEQUILA_LOGIN)
 
-            resp = self.session.post(self.TEQUILA_LOGIN_POST,
-                    verify=True, data=payload)
+    if resp.status_code != 200:
+        raise TequilaError()
 
-            soup = BeautifulSoup(resp.text)
-            error = soup.find('font', color='red', size='+1')
+    parsed_url = urlparse.urlsplit(resp.url)
+    dict_query = urlparse.parse_qs(parsed_url.query)
+    sesskey = dict_query['requestkey'][0]
+    payload = dict()
+    payload["requestkey"] = sesskey
+    payload["username"] = username
+    payload["password"] = password
 
-            if error:
-                logging.info("Tequila error")
-                logging.debug(error.string)
-                # Grab the tequila error if any
-                raise TequilaError(error.string)
-            if resp.status_code != 200:
-                logging.info("Tequila didn't return a 200 code")
-                logging.debug(resp.status_code)
-                raise TequilaError()
+    resp = session.post(TEQUILA_LOGIN_POST, verify=True, data=payload)
 
-    def get(self, *args, **kwargs):
-        """
-        Makes an HTTP GET request using the Tequila session.
-        Same parameters as requests.get()
-        """
-        return self.session.get(*args, **kwargs)
+    soup = BeautifulSoup(resp.text)
+    error = soup.find('font', color='red', size='+1')
 
-    def post(self, *args, **kwargs):
-        """
-        Makes an HTTP POST request using the Tequila session.
-        Same parameters as requests.post()
-        """
-        return self.session.post(*args, **kwargs)
+    if error:
+        logging.info("Tequila error")
+        logging.debug(error.string)
+        # Grab the tequila error if any
+        raise TequilaError(error.string)
+    if resp.status_code != 200:
+        logging.info("Tequila didn't return a 200 code")
+        logging.debug(resp.status_code)
+        raise TequilaError()
+
+    return session
+

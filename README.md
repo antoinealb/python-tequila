@@ -4,11 +4,12 @@ A python wrapper for the Tequila Login Manager at EPFL. Based on original work b
 
 ## Usage
 
-To get a connexion :
+To get a requests session which is authenticated against Tequila.
 
-    conn = TequilaConnexionWrapper("gaspar" ,"secret")
+    conn = create_tequila_session("gaspar", "secret")
 
-To fetch a page content :
+`conn` is a [session](http://docs.python-requests.org/en/latest/user/advanced/#session-objects) 
+object. For example, to fetch a page content :
 
     response = conn.get("http://moodle.epfl.ch")
 
