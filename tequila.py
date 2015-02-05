@@ -11,11 +11,13 @@ except ImportError:
 TEQUILA_LOGIN = "http://moodle.epfl.ch/login/index.php"
 TEQUILA_LOGIN_POST = "https://tequila.epfl.ch/cgi-bin/tequila/login"
 
+
 class TequilaError(RuntimeError):
     """
     Exception thrown in case of Tequila error.
     """
     pass
+
 
 def create_tequila_session(username, password):
     """Explicitly login into the tequila service, this will create
@@ -53,4 +55,3 @@ def create_tequila_session(username, password):
         raise TequilaError()
 
     return session
-
